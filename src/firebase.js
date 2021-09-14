@@ -1,5 +1,11 @@
 import {initializeApp} from 'firebase/app';
-import {browserLocalPersistence, getAuth, setPersistence, signInWithEmailAndPassword} from 'firebase/auth';
+import {
+  browserLocalPersistence,
+  initializeAuth,
+  signInWithEmailAndPassword,
+  browserPopupRedirectResolver,
+  signOut
+} from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: '',
@@ -13,20 +19,17 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 
-export const auth = getAuth(firebaseApp);
+export const auth = initializeAuth(firebaseApp, {
+  persistence: browserLocalPersistence,
+  popupRedirectResolver: browserPopupRedirectResolver,
+});
 
-export const firebaseSignIn = (email, password) => {
-  return setPersistence(auth, browserLocalPersistence)
-    .then(() => {
-      return signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          return {...userCredential};
-        })
-        .catch((error) => ({
-          error: 'Invalid username or password',
-        }));
-    })
-    .catch((error) => ({
-      error: 'Problem with authentication persistence.',
-    }));
-};
+export const firebaseSignIn = (email, password) => signInWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => userCredential)
+  .catch((error) => ({
+    error: 'Invalid username or password',
+  }));
+
+export const firebaseSignOut = signOut(auth).catch((error) => console.error(error));
+
+
